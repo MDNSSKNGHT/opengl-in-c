@@ -36,6 +36,8 @@ int main() {
     return 1;
   }
 
+  glViewport(0, 0, 800, 800);
+
   while (true) {
     SDL_Event event;
     SDL_PollEvent(&event);
