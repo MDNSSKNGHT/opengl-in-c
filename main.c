@@ -27,13 +27,14 @@ void compile_shader(GLuint ref, const char *filepath) {
 }
 
 int main() {
+  /* coordinates - colors */
   GLfloat vertices[] = {
-      -0.5f,        -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
-      0.5f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
-      0.0f,         0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f,
-      -0.5f / 2.0f, 0.5f * sqrtf(3.0f) / 6.0f,        0.0f,
-      0.5f / 2.0f,  0.5f * sqrtf(3.0f) / 6.0f,        0.0f,
-      0.0f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
+      -0.5f,        -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
+      0.5f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
+      0.0f,         0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f, 1.0f, 0.6f,  0.32f,
+      -0.5f / 2.0f, 0.5f * sqrtf(3.0f) / 6.0f,        0.0f, 0.9f, 0.45f, 0.17f,
+      0.5f / 2.0f,  0.5f * sqrtf(3.0f) / 6.0f,        0.0f, 0.9f, 0.45f, 0.17f,
+      0.0f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
   };
   GLuint indices[] = {0, 3, 5, 3, 2, 4, 5, 4, 1};
 
@@ -101,9 +102,13 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
                         (void *)0);
   glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                        (void *)(3 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(1);
 
   /* bind to zero, avoid accidental modifications */
   glBindBuffer(GL_ARRAY_BUFFER, 0);
