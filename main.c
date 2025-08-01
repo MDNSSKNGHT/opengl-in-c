@@ -1,8 +1,38 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+void compile_shader(GLuint ref, const char *filepath) {
+  FILE *file;
+  unsigned size;
+  char *buffer;
+
+  file = fopen(filepath, "r");
+
+  fseek(file, 0L, SEEK_END);
+  size = ftell(file);
+  fseek(file, 0L, SEEK_SET);
+
+  buffer = malloc(size + 1);
+  fread(buffer, 1, size, file);
+  buffer[size] = '\0';
+  fclose(file);
+
+  glShaderSource(ref, 1, (const char **)&buffer, NULL);
+  glCompileShader(ref);
+
+  free(buffer);
+}
 
 int main() {
+  GLfloat vertices[] = {
+      -0.5f, -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
+      0.5f,  -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
+      0.0f,  0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f,
+  };
+
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
     return 1;
@@ -38,6 +68,37 @@ int main() {
 
   glViewport(0, 0, 800, 800);
 
+  GLuint vert = glCreateShader(GL_VERTEX_SHADER);
+  compile_shader(vert, "shaders/default.vert");
+
+  GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
+  compile_shader(frag, "shaders/default.frag");
+
+  GLuint shader_program = glCreateProgram();
+  glAttachShader(shader_program, vert);
+  glAttachShader(shader_program, frag);
+  glLinkProgram(shader_program);
+
+  glDeleteShader(vert);
+  glDeleteShader(frag);
+
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  GLuint vbo;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+                        (void *)0);
+  glEnableVertexAttribArray(0);
+
+  /* bind to zero, avoid accidental modifications */
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+
   while (true) {
     SDL_Event event;
     SDL_PollEvent(&event);
@@ -50,8 +111,16 @@ int main() {
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glUseProgram(shader_program);
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     SDL_GL_SwapWindow(window);
   }
+
+  glDeleteVertexArrays(1, &vao);
+  glDeleteBuffers(1, &vbo);
+  glDeleteProgram(shader_program);
 
   SDL_GL_DestroyContext(gl_context);
   SDL_DestroyWindow(window);
