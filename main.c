@@ -28,10 +28,14 @@ void compile_shader(GLuint ref, const char *filepath) {
 
 int main() {
   GLfloat vertices[] = {
-      -0.5f, -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
-      0.5f,  -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
-      0.0f,  0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f,
+      -0.5f,        -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
+      0.5f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
+      0.0f,         0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f,
+      -0.5f / 2.0f, 0.5f * sqrtf(3.0f) / 6.0f,        0.0f,
+      0.5f / 2.0f,  0.5f * sqrtf(3.0f) / 6.0f,        0.0f,
+      0.0f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f,
   };
+  GLuint indices[] = {0, 3, 5, 3, 2, 4, 5, 4, 1};
 
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
@@ -86,6 +90,12 @@ int main() {
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
+  GLuint ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
   GLuint vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -98,6 +108,7 @@ int main() {
   /* bind to zero, avoid accidental modifications */
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   while (true) {
     SDL_Event event;
@@ -113,13 +124,14 @@ int main() {
 
     glUseProgram(shader_program);
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
 
   glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &ebo);
   glDeleteProgram(shader_program);
 
   SDL_GL_DestroyContext(gl_context);
