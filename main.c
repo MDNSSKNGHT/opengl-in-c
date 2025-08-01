@@ -115,6 +115,8 @@ int main() {
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+  GLuint uniform_scale_id = glGetUniformLocation(shader_program, "scale");
+
   while (true) {
     SDL_Event event;
     SDL_PollEvent(&event);
@@ -128,6 +130,8 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shader_program);
+    glUniform1f(uniform_scale_id, 0.5f);
+
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 
