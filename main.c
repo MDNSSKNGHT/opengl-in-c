@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,16 +33,13 @@ void compile_shader(GLuint ref, const char *filepath) {
 }
 
 int main() {
-  /* coordinates - colors */
+  /* coordinates (3 floats) - colors (3 floats) */
   GLfloat vertices[] = {
-      -0.5f,        -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
-      0.5f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
-      0.0f,         0.5f * sqrtf(3.0f) * 2.0f / 3.0f, 0.0f, 1.0f, 0.6f,  0.32f,
-      -0.5f / 2.0f, 0.5f * sqrtf(3.0f) / 6.0f,        0.0f, 0.9f, 0.45f, 0.17f,
-      0.5f / 2.0f,  0.5f * sqrtf(3.0f) / 6.0f,        0.0f, 0.9f, 0.45f, 0.17f,
-      0.0f,         -0.5f * sqrtf(3.0f) / 3.0f,       0.0f, 0.8f, 0.3f,  0.02f,
+      -0.5f, -0.5f, 0.0f, 1.0f,  0.0f, 0.0f, -0.5f, 0.5f,
+      0.0f,  0.0f,  1.0f, 0.0f,  0.5f, 0.5f, 0.0f,  0.0f,
+      0.0f,  1.0f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  1.0f,
   };
-  GLuint indices[] = {0, 3, 5, 3, 2, 4, 5, 4, 1};
+  GLuint indices[] = {0, 2, 1, 0, 3, 2};
 
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
@@ -140,7 +136,7 @@ int main() {
     glUniform1f(uniform_scale_id, 0.5f);
 
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
