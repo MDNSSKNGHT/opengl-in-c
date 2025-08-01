@@ -7,7 +7,8 @@
 void compile_shader(GLuint ref, const char *filepath) {
   FILE *file;
   unsigned size;
-  char *buffer;
+  char *buffer, info[1024];
+  GLint ret;
 
   file = fopen(filepath, "r");
 
@@ -22,6 +23,12 @@ void compile_shader(GLuint ref, const char *filepath) {
 
   glShaderSource(ref, 1, (const char **)&buffer, NULL);
   glCompileShader(ref);
+
+  glGetShaderiv(ref, GL_COMPILE_STATUS, &ret);
+  if (!ret) {
+    glGetShaderInfoLog(ref, 1024, NULL, info);
+    fprintf(stderr, "Shader compilation error: %s\n", info);
+  }
 
   free(buffer);
 }
