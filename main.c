@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <cglm/cglm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -61,11 +62,12 @@ void compile_shader(GLuint ref, const char *filepath) {
 
 int main() {
   /* coordinates (3 floats) - colors (3 floats) - texture (2 floats) */
-  GLfloat vertices[] = {-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                        -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-                        0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-                        0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f};
-  GLuint indices[] = {0, 2, 1, 0, 3, 2};
+  GLfloat vertices[] = {-0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+                        -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+                        0.5f,  0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+                        0.5f,  0.0f, 0.5f,  0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+                        0.0f,  0.8f, 0.0f,  0.92f, 0.86f, 0.76f, 2.5f, 5.0f};
+  GLuint indices[] = {0, 1, 2, 0, 2, 3, 0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4};
 
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
@@ -154,10 +156,18 @@ int main() {
 
   GLuint texture;
   glGenTextures(1, &texture);
-  load_texture(texture, "textures/tulip.png");
+  load_texture(texture, "textures/brick.jpg");
 
   GLuint uniform_scale_id = glGetUniformLocation(shader_program, "scale");
   GLuint uniform_tex0_id = glGetUniformLocation(shader_program, "tex0");
+
+  GLuint model_id = glGetUniformLocation(shader_program, "model");
+  GLuint view_id = glGetUniformLocation(shader_program, "view");
+  GLuint projection_id = glGetUniformLocation(shader_program, "projection");
+
+  float rotation = 0.0f;
+
+  glEnable(GL_DEPTH_TEST);
 
   while (true) {
     SDL_Event event;
@@ -169,11 +179,26 @@ int main() {
 
     /* render loop */
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(shader_program);
+
+    mat4 model = GLM_MAT4_IDENTITY;
+    mat4 view = GLM_MAT4_IDENTITY;
+    mat4 projection = GLM_MAT4_IDENTITY;
+
+    glm_spin(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
+    glm_translate(view, (vec3){0.0f, -0.5f, -2.0f});
+    glm_perspective(glm_rad(45.0f), (float)(int)(800 / 800), 0.1f, 100.0f,
+                    projection);
+    rotation += 0.5f;
+
+    glUniformMatrix4fv(model_id, 1, GL_FALSE, (const float *)model);
+    glUniformMatrix4fv(view_id, 1, GL_FALSE, (const float *)view);
+    glUniformMatrix4fv(projection_id, 1, GL_FALSE, (const float *)projection);
+
     glUniform1i(uniform_tex0_id, 0);
-    glUniform1f(uniform_scale_id, 0.5f);
+    glUniform1f(uniform_scale_id, 1.0f);
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(vao);

@@ -4,9 +4,9 @@ CFLAGS = -g
 CFLAGS += -Wall
 CFLAGS += -Wextra
 CFLAGS += -Werror
-CFLAGS += $(shell pkg-config --cflags glew sdl3)
+CFLAGS += $(shell pkg-config --cflags glew sdl3 cglm)
 
-LDFLAGS = $(shell pkg-config --libs glew sdl3)
+LDFLAGS = $(shell pkg-config --libs glew sdl3 cglm)
 LDFLAGS += -framework OpenGL
 
 # %.o: %.c
