@@ -158,7 +158,6 @@ int main() {
   glGenTextures(1, &texture);
   load_texture(texture, "textures/brick.jpg");
 
-  GLuint uniform_scale_id = glGetUniformLocation(shader_program, "scale");
   GLuint uniform_tex0_id = glGetUniformLocation(shader_program, "tex0");
 
   GLuint model_id = glGetUniformLocation(shader_program, "model");
@@ -198,7 +197,6 @@ int main() {
     glUniformMatrix4fv(projection_id, 1, GL_FALSE, (const float *)projection);
 
     glUniform1i(uniform_tex0_id, 0);
-    glUniform1f(uniform_scale_id, 1.0f);
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(vao);
