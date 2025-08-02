@@ -6,6 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "shader.h"
+
 void load_texture(GLuint ref, const char *filepath) {
   int width, height, comp;
   unsigned char *buffer;
@@ -29,35 +31,6 @@ void load_texture(GLuint ref, const char *filepath) {
   glBindTexture(GL_TEXTURE_2D, 0);
 
   stbi_image_free(buffer);
-}
-
-void compile_shader(GLuint ref, const char *filepath) {
-  FILE *file;
-  unsigned size;
-  char *buffer, info[1024];
-  GLint ret;
-
-  file = fopen(filepath, "r");
-
-  fseek(file, 0L, SEEK_END);
-  size = ftell(file);
-  fseek(file, 0L, SEEK_SET);
-
-  buffer = malloc(size + 1);
-  fread(buffer, 1, size, file);
-  buffer[size] = '\0';
-  fclose(file);
-
-  glShaderSource(ref, 1, (const char **)&buffer, NULL);
-  glCompileShader(ref);
-
-  glGetShaderiv(ref, GL_COMPILE_STATUS, &ret);
-  if (!ret) {
-    glGetShaderInfoLog(ref, 1024, NULL, info);
-    fprintf(stderr, "Shader compilation error: %s\n", info);
-  }
-
-  free(buffer);
 }
 
 int main() {
@@ -108,19 +81,9 @@ int main() {
 
   glViewport(0, 0, 800, 800);
 
-  GLuint vert = glCreateShader(GL_VERTEX_SHADER);
-  compile_shader(vert, "shaders/default.vert");
+  struct shader shader;
 
-  GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
-  compile_shader(frag, "shaders/default.frag");
-
-  GLuint shader_program = glCreateProgram();
-  glAttachShader(shader_program, vert);
-  glAttachShader(shader_program, frag);
-  glLinkProgram(shader_program);
-
-  glDeleteShader(vert);
-  glDeleteShader(frag);
+  shader_from(&shader, "shaders/default.vert", "shaders/default.frag");
 
   GLuint vao;
   glGenVertexArrays(1, &vao);
@@ -158,11 +121,11 @@ int main() {
   glGenTextures(1, &texture);
   load_texture(texture, "textures/brick.jpg");
 
-  GLuint uniform_tex0_id = glGetUniformLocation(shader_program, "tex0");
+  GLuint uniform_tex0_id = glGetUniformLocation(shader.program, "tex0");
 
-  GLuint model_id = glGetUniformLocation(shader_program, "model");
-  GLuint view_id = glGetUniformLocation(shader_program, "view");
-  GLuint projection_id = glGetUniformLocation(shader_program, "projection");
+  GLuint model_id = glGetUniformLocation(shader.program, "model");
+  GLuint view_id = glGetUniformLocation(shader.program, "view");
+  GLuint projection_id = glGetUniformLocation(shader.program, "projection");
 
   float rotation = 0.0f;
 
@@ -180,7 +143,7 @@ int main() {
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(shader_program);
+    shader_use(&shader);
 
     mat4 model = GLM_MAT4_IDENTITY;
     mat4 view = GLM_MAT4_IDENTITY;
@@ -209,7 +172,7 @@ int main() {
   glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ebo);
-  glDeleteProgram(shader_program);
+  shader_delete(&shader);
 
   SDL_GL_DestroyContext(gl_context);
   SDL_DestroyWindow(window);
