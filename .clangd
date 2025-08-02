@@ -3,6 +3,7 @@ CompileFlags:
     -Wall, -Wextra, -Werror,
     -I/opt/homebrew/opt/glew/include,
     -I/opt/homebrew/opt/sdl3/include,
+    -I/opt/homebrew/opt/sdl3_image/include,
     -I/opt/homebrew/opt/cglm/include
   ]
 

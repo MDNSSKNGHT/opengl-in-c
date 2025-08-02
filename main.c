@@ -1,19 +1,16 @@
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <cglm/cglm.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #include "shader.h"
 
-void load_texture(GLuint ref, const char *filepath) {
-  int width, height, comp;
-  unsigned char *buffer;
+void load_texture(GLuint ref, const char *filename) {
+  SDL_Surface *surface = IMG_Load(filename);
 
-  stbi_set_flip_vertically_on_load(true);
-  buffer = stbi_load(filepath, &width, &height, &comp, 0);
+  SDL_FlipSurface(surface, SDL_FLIP_VERTICAL);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, ref);
@@ -24,13 +21,13 @@ void load_texture(GLuint ref, const char *filepath) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, buffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, surface->w, surface->h, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, surface->pixels);
   glGenerateMipmap(GL_TEXTURE_2D);
   /* unbind texture */
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  stbi_image_free(buffer);
+  SDL_DestroySurface(surface);
 }
 
 int main() {
