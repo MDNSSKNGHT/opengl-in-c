@@ -2,6 +2,33 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+void load_texture(GLuint ref, const char *filepath) {
+  int width, height, comp;
+  unsigned char *buffer;
+
+  stbi_set_flip_vertically_on_load(true);
+  buffer = stbi_load(filepath, &width, &height, &comp, 0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, ref);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, buffer);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  /* unbind texture */
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  stbi_image_free(buffer);
+}
 
 void compile_shader(GLuint ref, const char *filepath) {
   FILE *file;
@@ -33,12 +60,11 @@ void compile_shader(GLuint ref, const char *filepath) {
 }
 
 int main() {
-  /* coordinates (3 floats) - colors (3 floats) */
-  GLfloat vertices[] = {
-      -0.5f, -0.5f, 0.0f, 1.0f,  0.0f, 0.0f, -0.5f, 0.5f,
-      0.0f,  0.0f,  1.0f, 0.0f,  0.5f, 0.5f, 0.0f,  0.0f,
-      0.0f,  1.0f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  1.0f,
-  };
+  /* coordinates (3 floats) - colors (3 floats) - texture (2 floats) */
+  GLfloat vertices[] = {-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                        -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+                        0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                        0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f};
   GLuint indices[] = {0, 2, 1, 0, 3, 2};
 
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -105,20 +131,29 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                         (void *)0);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                         (void *)(3 * sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
+
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                        (void *)(6 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(2);
 
   /* bind to zero, avoid accidental modifications */
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+  GLuint texture;
+  glGenTextures(1, &texture);
+  load_texture(texture, "textures/tulip.png");
+
   GLuint uniform_scale_id = glGetUniformLocation(shader_program, "scale");
+  GLuint uniform_tex0_id = glGetUniformLocation(shader_program, "tex0");
 
   while (true) {
     SDL_Event event;
@@ -133,8 +168,10 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shader_program);
+    glUniform1i(uniform_tex0_id, 0);
     glUniform1f(uniform_scale_id, 0.5f);
 
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
