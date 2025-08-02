@@ -177,7 +177,8 @@ int main() {
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]),
+                   GL_UNSIGNED_INT, 0);
 
     SDL_GL_SwapWindow(window);
   }
