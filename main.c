@@ -91,6 +91,10 @@ int main() {
     return 1;
   }
 
+  if (!SDL_GL_SetSwapInterval(1)) {
+    fprintf(stderr, "Wait for vertical sync disabled: %s\n", SDL_GetError());
+  }
+
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
     fprintf(stderr, "Failed to initialize GLEW\n");
