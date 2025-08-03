@@ -3,6 +3,16 @@
 
 #include <GL/glew.h>
 
+#define OBJECT_FROM(obj, vert, indi)                                           \
+  do {                                                                         \
+    obj.vertices = vert;                                                       \
+    obj.vertices_size = sizeof(vert);                                          \
+    obj.vertices_count = sizeof(vert) / sizeof(vert[0]);                       \
+    obj.indices = indi;                                                        \
+    obj.indices_size = sizeof(indi);                                           \
+    obj.indices_count = sizeof(indi) / sizeof(indi[0]);                        \
+  } while (0)
+
 struct object {
   GLuint id;
 
