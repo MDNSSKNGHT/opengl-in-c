@@ -35,9 +35,6 @@ void load_texture(GLuint ref, const char *filename) {
 }
 
 int main() {
-  struct object pyramid;
-  OBJECT_FROM(pyramid, pyramid_vertices, pyramid_indices);
-
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
     return 1;
@@ -81,8 +78,10 @@ int main() {
   glViewport(0, 0, 800, 800);
 
   struct shader shader;
-
   shader_from(&shader, "shaders/default.vert", "shaders/default.frag");
+
+  struct object pyramid;
+  OBJECT_FROM(pyramid, pyramid_vertices, pyramid_indices);
 
   object_register(&pyramid);
   object_create_mesh(&pyramid);
