@@ -103,9 +103,11 @@ int main() {
   /* vertices */
   object_link_attribute(&pyramid, 3, 8 * sizeof(GLfloat), (void *)0);
   /* colors */
-  object_link_attribute(&pyramid, 3, 8 * sizeof(GLfloat), (void *)(3 * sizeof(float)));
+  object_link_attribute(&pyramid, 3, 8 * sizeof(GLfloat),
+                        (void *)(3 * sizeof(float)));
   /* texture coordinates */
-  object_link_attribute(&pyramid, 2, 8 * sizeof(GLfloat), (void *)(6 * sizeof(float)));
+  object_link_attribute(&pyramid, 2, 8 * sizeof(GLfloat),
+                        (void *)(6 * sizeof(float)));
 
   GLuint texture;
   glGenTextures(1, &texture);
