@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "camera.h"
 #include "shader.h"
 
 void load_texture(GLuint ref, const char *filename) {
@@ -119,12 +120,17 @@ int main() {
   load_texture(texture, "textures/brick.jpg");
 
   GLuint uniform_tex0_id = glGetUniformLocation(shader.program, "tex0");
+  GLuint camera_matrix_id =
+      glGetUniformLocation(shader.program, "camera_matrix");
 
-  GLuint model_id = glGetUniformLocation(shader.program, "model");
-  GLuint view_id = glGetUniformLocation(shader.program, "view");
-  GLuint projection_id = glGetUniformLocation(shader.program, "projection");
+  struct camera camera;
 
-  float rotation = 0.0f;
+  camera_set_vectors(&camera, (vec3){0.0f, 0.0f, 2.0f},
+                     (vec3){0.0f, 0.0f, -1.0f}, (vec3){0.0f, 1.0f, 0.0f});
+
+  camera.fov = 45.0f;
+  camera.near_place = 0.1f;
+  camera.far_plane = 100.0f;
 
   glEnable(GL_DEPTH_TEST);
 
@@ -142,19 +148,9 @@ int main() {
 
     shader_use(&shader);
 
-    mat4 model = GLM_MAT4_IDENTITY;
-    mat4 view = GLM_MAT4_IDENTITY;
-    mat4 projection = GLM_MAT4_IDENTITY;
-
-    glm_spin(model, glm_rad(rotation), (vec3){0.0f, 1.0f, 0.0f});
-    glm_translate(view, (vec3){0.0f, -0.5f, -2.0f});
-    glm_perspective(glm_rad(45.0f), (float)(int)(800 / 800), 0.1f, 100.0f,
-                    projection);
-    rotation += 0.5f;
-
-    glUniformMatrix4fv(model_id, 1, GL_FALSE, (const float *)model);
-    glUniformMatrix4fv(view_id, 1, GL_FALSE, (const float *)view);
-    glUniformMatrix4fv(projection_id, 1, GL_FALSE, (const float *)projection);
+    camera_calculate_matrix(&camera);
+    glUniformMatrix4fv(camera_matrix_id, 1, GL_FALSE,
+                       (const float *)camera.matrix);
 
     glUniform1i(uniform_tex0_id, 0);
 
