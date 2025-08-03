@@ -56,6 +56,9 @@ int main() {
     return 1;
   }
 
+  SDL_SetWindowRelativeMouseMode(window, true);
+  SDL_WarpMouseInWindow(window, 800 / 2.0f, 800 / 2.0f);
+
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   if (!gl_context) {
     fprintf(stderr, "Failed to create OpenGL context: %s\n", SDL_GetError());
@@ -132,6 +135,7 @@ int main() {
   camera.near_place = 0.1f;
   camera.far_plane = 100.0f;
 
+  camera.sensitivity = 10.0f;
   camera.speed = 0.05f;
 
   glEnable(GL_DEPTH_TEST);
@@ -144,7 +148,10 @@ int main() {
 
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN:
-      camera_process_input(&camera, &event);
+      camera_process_keyboard_input(&camera, &event);
+      break;
+    case SDL_EVENT_MOUSE_MOTION:
+      camera_process_mouse_input(&camera, &event);
       break;
     case SDL_EVENT_QUIT:
       should_close = true;

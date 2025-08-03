@@ -1,4 +1,8 @@
+#include <math.h>
+
 #include "camera.h"
+
+#define UNUSED(e) ((void)e)
 
 void camera_set_vectors(struct camera *camera, vec3 position, vec3 orientation,
                         vec3 up) {
@@ -19,7 +23,7 @@ void camera_calculate_matrix(struct camera *camera) {
   glm_mat4_mul(projection, view, camera->matrix);
 }
 
-void camera_process_input(struct camera *camera, SDL_Event *event) {
+void camera_process_keyboard_input(struct camera *camera, SDL_Event *event) {
   vec3 vec;
 
   switch (event->key.scancode) {
@@ -46,4 +50,34 @@ void camera_process_input(struct camera *camera, SDL_Event *event) {
   default:
     break;
   }
+}
+
+void camera_process_mouse_input(struct camera *camera, SDL_Event *event) {
+  float x, y, rotation_x, rotation_y;
+  vec3 orientation, orientation_normalized, axis;
+
+  UNUSED(event);
+
+  SDL_GetMouseState(&x, &y);
+
+  /* TODO: pass width and height of window */
+  rotation_x = camera->sensitivity * (y - (800 / 2.0f)) / 800;
+  rotation_y = camera->sensitivity * (x - (800 / 2.0f)) / 800;
+
+  glm_vec3_copy(camera->orientation, orientation);
+  glm_vec3_crossn(orientation, camera->up, axis);
+  glm_vec3_rotate(orientation, glm_rad(-rotation_x), axis);
+
+  glm_vec3_normalize_to(orientation, orientation_normalized);
+
+  /* TODO: find a better way to prevent barrel roll */
+  if (fabsf(glm_vec3_angle(orientation, camera->up) - glm_rad(90.0f)) <=
+      glm_rad(85.0f)) {
+    glm_vec3_copy(orientation, camera->orientation);
+  }
+
+  glm_vec3_rotate(orientation, glm_rad(-rotation_y), camera->up);
+  glm_vec3_copy(orientation, camera->orientation);
+
+  SDL_WarpMouseInWindow(NULL, 800 / 2.0f, 800 / 2.0f);
 }

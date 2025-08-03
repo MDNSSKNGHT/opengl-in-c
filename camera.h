@@ -13,6 +13,7 @@ struct camera {
   float near_place;
   float far_plane;
 
+  float sensitivity;
   float speed;
 
   mat4 matrix;
@@ -21,6 +22,8 @@ struct camera {
 void camera_set_vectors(struct camera *camera, vec3 position, vec3 orientation,
                         vec3 up);
 void camera_calculate_matrix(struct camera *camera);
-void camera_process_input(struct camera *camera, SDL_Event *event);
+
+void camera_process_keyboard_input(struct camera *camera, SDL_Event *event);
+void camera_process_mouse_input(struct camera *camera, SDL_Event *event);
 
 #endif /* __CAMERA_H__ */
