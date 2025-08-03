@@ -12,7 +12,7 @@ LDFLAGS += -framework OpenGL
 # %.o: %.c
 # 	$(CC) -c -o $@ $< $(CFLAGS)
 
-main: main.o shader.o camera.o
+main: main.o shader.o camera.o object.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 PHONY: clean
