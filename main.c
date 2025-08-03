@@ -132,13 +132,24 @@ int main() {
   camera.near_place = 0.1f;
   camera.far_plane = 100.0f;
 
+  camera.speed = 0.05f;
+
   glEnable(GL_DEPTH_TEST);
 
-  while (true) {
+  bool should_close = false;
+
+  while (!should_close) {
     SDL_Event event;
     SDL_PollEvent(&event);
 
-    if (event.type == SDL_EVENT_QUIT) {
+    switch (event.type) {
+    case SDL_EVENT_KEY_DOWN:
+      camera_process_input(&camera, &event);
+      break;
+    case SDL_EVENT_QUIT:
+      should_close = true;
+      break;
+    default:
       break;
     }
 
