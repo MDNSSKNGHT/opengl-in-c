@@ -90,6 +90,11 @@ int main() {
   pyramid_object.indices_count =
       sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
 
+  /* TODO: move this to object implementation */
+  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, pyramid_object.position);
+  glm_mat4_copy((mat4)GLM_MAT4_IDENTITY_INIT, pyramid_object.model);
+  glm_translate(pyramid_object.model, pyramid_object.position);
+
   object_register(&pyramid_object);
   object_upload_mesh(&pyramid_object);
 
@@ -104,7 +109,9 @@ int main() {
   glGenTextures(1, &texture);
   load_texture(texture, "textures/brick.jpg");
 
+  /* TODO: abstract away shader uniforms */
   GLuint uniform_tex0_id = glGetUniformLocation(shader.program, "tex0");
+  GLuint model = glGetUniformLocation(shader.program, "model");
   GLuint camera_matrix_id =
       glGetUniformLocation(shader.program, "camera_matrix");
 
@@ -151,6 +158,7 @@ int main() {
     camera_calculate_matrix(&camera);
     glUniformMatrix4fv(camera_matrix_id, 1, GL_FALSE,
                        (const float *)camera.matrix);
+    glUniformMatrix4fv(model, 1, GL_FALSE, (const float *)pyramid_object.model);
 
     glUniform1i(uniform_tex0_id, 0);
 

@@ -8,9 +8,10 @@ out vec3 color;
 out vec2 textureCoordinates;
 
 uniform mat4 camera_matrix;
+uniform mat4 model;
 
 void main() {
-  gl_Position = camera_matrix * vec4(aPos, 1.0);
+  gl_Position = camera_matrix * model * vec4(aPos, 1.0);
 
   color = aCol;
   textureCoordinates = aTex;
