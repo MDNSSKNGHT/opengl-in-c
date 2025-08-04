@@ -12,12 +12,12 @@ void object_register(struct object *object) {
 }
 
 /*
- * generate the following:
+ * generates the following:
  * vao
  * ebo
  * vbo
  */
-void object_create_mesh(struct object *object) {
+void object_upload_mesh(struct object *object) {
   glGenVertexArrays(1, &object->vao);
   glBindVertexArray(object->vao);
 
@@ -37,14 +37,16 @@ void object_create_mesh(struct object *object) {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void object_link_attribute(struct object *object, GLint count, GLsizei stride,
-                           const void *offset) {
+void object_register_attribute(struct object *object, int count,
+                               int stride_count, int offset_count) {
   GLuint index = objects_attribute_indices[object->id];
 
   glBindVertexArray(object->vao);
   glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 
-  glVertexAttribPointer(index, count, GL_FLOAT, GL_FALSE, stride, offset);
+  glVertexAttribPointer(index, count, GL_FLOAT, GL_FALSE,
+                        stride_count * sizeof(GLfloat),
+                        (void *)(offset_count * sizeof(GLfloat)));
   glEnableVertexAttribArray(index);
 
   /* for the next attribute */
@@ -54,7 +56,7 @@ void object_link_attribute(struct object *object, GLint count, GLsizei stride,
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void object_delete_mesh(struct object *object) {
+void object_unload_mesh(struct object *object) {
   glDeleteVertexArrays(1, &object->vao);
   glDeleteBuffers(1, &object->vbo);
   glDeleteBuffers(1, &object->ebo);

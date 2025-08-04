@@ -80,20 +80,25 @@ int main() {
   struct shader shader;
   shader_from(&shader, "shaders/default.vert", "shaders/default.frag");
 
-  struct object pyramid;
-  OBJECT_FROM(pyramid, pyramid_vertices, pyramid_indices);
+  struct object pyramid_object;
 
-  object_register(&pyramid);
-  object_create_mesh(&pyramid);
+  pyramid_object.vertices = PYRAMID_MODEL_VERTICES;
+  pyramid_object.vertices_size = sizeof(PYRAMID_MODEL_VERTICES);
+
+  pyramid_object.indices = PYRAMID_MODEL_INDICES;
+  pyramid_object.indices_size = sizeof(PYRAMID_MODEL_INDICES);
+  pyramid_object.indices_count =
+      sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
+
+  object_register(&pyramid_object);
+  object_upload_mesh(&pyramid_object);
 
   /* vertices */
-  object_link_attribute(&pyramid, 3, 8 * sizeof(GLfloat), (void *)0);
+  object_register_attribute(&pyramid_object, 3, 8, 0);
   /* colors */
-  object_link_attribute(&pyramid, 3, 8 * sizeof(GLfloat),
-                        (void *)(3 * sizeof(float)));
+  object_register_attribute(&pyramid_object, 3, 8, 3);
   /* texture coordinates */
-  object_link_attribute(&pyramid, 2, 8 * sizeof(GLfloat),
-                        (void *)(6 * sizeof(float)));
+  object_register_attribute(&pyramid_object, 3, 8, 6);
 
   GLuint texture;
   glGenTextures(1, &texture);
@@ -150,13 +155,14 @@ int main() {
     glUniform1i(uniform_tex0_id, 0);
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(pyramid.vao);
-    glDrawElements(GL_TRIANGLES, pyramid.indices_count, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(pyramid_object.vao);
+    glDrawElements(GL_TRIANGLES, pyramid_object.indices_count, GL_UNSIGNED_INT,
+                   0);
 
     SDL_GL_SwapWindow(window);
   }
 
-  object_delete_mesh(&pyramid);
+  object_unload_mesh(&pyramid_object);
   shader_delete(&shader);
 
   SDL_GL_DestroyContext(gl_context);
