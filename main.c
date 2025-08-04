@@ -82,18 +82,8 @@ int main() {
 
   struct object pyramid_object;
 
-  pyramid_object.vertices = PYRAMID_MODEL_VERTICES;
-  pyramid_object.vertices_size = sizeof(PYRAMID_MODEL_VERTICES);
-
-  pyramid_object.indices = PYRAMID_MODEL_INDICES;
-  pyramid_object.indices_size = sizeof(PYRAMID_MODEL_INDICES);
-  pyramid_object.indices_count =
-      sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
-
-  /* TODO: move this to object implementation */
-  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, pyramid_object.position);
-  glm_mat4_copy((mat4)GLM_MAT4_IDENTITY_INIT, pyramid_object.model);
-  glm_translate(pyramid_object.model, pyramid_object.position);
+  OBJECT_SET_DATA(pyramid_object, PYRAMID_MODEL_VERTICES, PYRAMID_MODEL_INDICES);
+  OBJECT_SET_POSITION(pyramid_object, ((vec3){0.0f, 0.0f, 0.0f}));
 
   object_register(&pyramid_object);
   object_upload_mesh(&pyramid_object);
