@@ -52,8 +52,13 @@ void object_register_attribute(struct object *object, int count,
   /* for the next attribute */
   objects_attribute_indices[object->id]++;
 
-  glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+}
+
+void object_draw_mesh(struct object *object) {
+  glBindVertexArray(object->vao);
+  glDrawElements(GL_TRIANGLES, object->indices_count, GL_UNSIGNED_INT, 0);
 }
 
 void object_unload_mesh(struct object *object) {

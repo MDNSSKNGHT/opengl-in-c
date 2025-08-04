@@ -155,9 +155,7 @@ int main() {
     glUniform1i(uniform_tex0_id, 0);
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(pyramid_object.vao);
-    glDrawElements(GL_TRIANGLES, pyramid_object.indices_count, GL_UNSIGNED_INT,
-                   0);
+    object_draw_mesh(&pyramid_object);
 
     SDL_GL_SwapWindow(window);
   }
