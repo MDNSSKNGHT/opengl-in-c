@@ -9,6 +9,7 @@
 #include "object.h"
 #include "shader.h"
 
+#include "models/light.h"
 #include "models/pyramid.h"
 
 void load_texture(GLuint ref, const char *filename) {
@@ -82,28 +83,52 @@ int main() {
 
   struct object pyramid_object;
 
-  OBJECT_SET_DATA(pyramid_object, PYRAMID_MODEL_VERTICES, PYRAMID_MODEL_INDICES);
+  OBJECT_SET_DATA(pyramid_object, PYRAMID_MODEL_VERTICES,
+                  PYRAMID_MODEL_INDICES);
   OBJECT_SET_POSITION(pyramid_object, ((vec3){0.0f, 0.0f, 0.0f}));
 
   object_register(&pyramid_object);
   object_upload_mesh(&pyramid_object);
 
   /* vertices */
-  object_register_attribute(&pyramid_object, 3, 8, 0);
+  object_register_attribute(&pyramid_object, 3, 11, 0);
   /* colors */
-  object_register_attribute(&pyramid_object, 3, 8, 3);
+  object_register_attribute(&pyramid_object, 3, 11, 3);
   /* texture coordinates */
-  object_register_attribute(&pyramid_object, 3, 8, 6);
+  object_register_attribute(&pyramid_object, 3, 11, 6);
+  /* normals */
+  object_register_attribute(&pyramid_object, 3, 11, 8);
 
   GLuint texture;
   glGenTextures(1, &texture);
   load_texture(texture, "textures/brick.jpg");
+
+  struct shader light_shader;
+  shader_from(&light_shader, "shaders/light.vert", "shaders/light.frag");
+
+  struct object light_object;
+  OBJECT_SET_DATA(light_object, LIGHT_MODEL_VERTICES, LIGHT_MODEL_INDICES);
+  OBJECT_SET_POSITION(light_object, ((vec3){0.5f, 0.5f, 0.5f}));
+
+  object_register(&light_object);
+  object_upload_mesh(&light_object);
+  object_register_attribute(&light_object, 3, 3, 0);
+
+  vec4 light_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
   /* TODO: abstract away shader uniforms */
   GLuint uniform_tex0_id = glGetUniformLocation(shader.program, "tex0");
   GLuint model = glGetUniformLocation(shader.program, "model");
   GLuint camera_matrix_id =
       glGetUniformLocation(shader.program, "camera_matrix");
+
+  GLuint camera_position = glGetUniformLocation(shader.program, "camera_position");
+
+  GLuint light_model = glGetUniformLocation(light_shader.program, "model");
+  GLuint light_camera_matrix = glGetUniformLocation(light_shader.program, "camera_matrix");
+  GLuint light_color_id = glGetUniformLocation(light_shader.program, "light_color");
+  GLuint light_color_id_pyramid = glGetUniformLocation(shader.program, "light_color");
+  GLuint light_position = glGetUniformLocation(shader.program, "light_position");
 
   struct camera camera;
 
@@ -151,9 +176,20 @@ int main() {
     glUniformMatrix4fv(model, 1, GL_FALSE, (const float *)pyramid_object.model);
 
     glUniform1i(uniform_tex0_id, 0);
+    glUniform4f(light_color_id_pyramid, light_color[0], light_color[1], light_color[2], light_color[3]);
+    glUniform3f(light_position, 0.5f, 0.5f, 0.5f);
+    glUniform3f(camera_position, camera.position[0], camera.position[1], camera.position[2]);
 
     glBindTexture(GL_TEXTURE_2D, texture);
     object_draw_mesh(&pyramid_object);
+
+    shader_use(&light_shader);
+    glUniformMatrix4fv(light_camera_matrix, 1, GL_FALSE,
+                       (const float *)camera.matrix);
+    glUniformMatrix4fv(light_model, 1, GL_FALSE, (const float *)light_object.model);
+    glUniform4f(light_color_id, light_color[0], light_color[1], light_color[2], light_color[3]);
+
+    object_draw_mesh(&light_object);
 
     SDL_GL_SwapWindow(window);
   }
