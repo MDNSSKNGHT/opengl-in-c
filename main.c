@@ -81,23 +81,30 @@ int main() {
   struct shader shader;
   shader_from(&shader, "shaders/default.vert", "shaders/default.frag");
 
-  struct object pyramid_object;
+  struct object pyramid_object, light_object;
 
-  OBJECT_SET_DATA(pyramid_object, PYRAMID_MODEL_VERTICES,
-                  PYRAMID_MODEL_INDICES);
-  OBJECT_SET_POSITION(pyramid_object, ((vec3){0.0f, 0.0f, 0.0f}));
+  pyramid_object.vertices.data = PYRAMID_MODEL_VERTICES;
+  pyramid_object.vertices.size = sizeof(PYRAMID_MODEL_VERTICES);
+  pyramid_object.vertices.count = sizeof(PYRAMID_MODEL_VERTICES) / sizeof(PYRAMID_MODEL_VERTICES[0]);
+  pyramid_object.vertices.attributes = VERTEX_ATTRIBUTE_HAS_NORMAL | VERTEX_ATTRIBUTE_HAS_COLOR | VERTEX_ATTRIBUTE_HAS_TEXTURE;
 
-  object_register(&pyramid_object);
-  object_upload_mesh(&pyramid_object);
+  pyramid_object.indices.data = PYRAMID_MODEL_INDICES;
+  pyramid_object.indices.size = sizeof(PYRAMID_MODEL_INDICES);
+  pyramid_object.indices.count = sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
 
-  /* vertices */
-  object_register_attribute(&pyramid_object, 3, 11, 0);
-  /* colors */
-  object_register_attribute(&pyramid_object, 3, 11, 3);
-  /* texture coordinates */
-  object_register_attribute(&pyramid_object, 3, 11, 6);
-  /* normals */
-  object_register_attribute(&pyramid_object, 3, 11, 8);
+  object_build(&pyramid_object);
+
+  light_object.vertices.data = LIGHT_MODEL_VERTICES;
+  light_object.vertices.size = sizeof(LIGHT_MODEL_VERTICES);
+  light_object.vertices.count = sizeof(LIGHT_MODEL_VERTICES) / sizeof(LIGHT_MODEL_VERTICES[0]);
+  /* only has position. */
+  light_object.vertices.attributes = 0;
+
+  light_object.indices.data = LIGHT_MODEL_INDICES;
+  light_object.indices.size = sizeof(LIGHT_MODEL_INDICES);
+  light_object.indices.count = sizeof(LIGHT_MODEL_INDICES) / sizeof(LIGHT_MODEL_INDICES[0]);
+
+  object_build(&light_object);
 
   GLuint texture;
   glGenTextures(1, &texture);
@@ -106,13 +113,8 @@ int main() {
   struct shader light_shader;
   shader_from(&light_shader, "shaders/light.vert", "shaders/light.frag");
 
-  struct object light_object;
-  OBJECT_SET_DATA(light_object, LIGHT_MODEL_VERTICES, LIGHT_MODEL_INDICES);
-  OBJECT_SET_POSITION(light_object, ((vec3){0.5f, 0.5f, 0.5f}));
-
-  object_register(&light_object);
-  object_upload_mesh(&light_object);
-  object_register_attribute(&light_object, 3, 3, 0);
+  mat4 light_model_mat = GLM_MAT4_IDENTITY_INIT;
+  glm_translate(light_model_mat, (vec3){0.5f, 0.5f, 0.5f});
 
   vec4 light_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -173,7 +175,7 @@ int main() {
     camera_calculate_matrix(&camera);
     glUniformMatrix4fv(camera_matrix_id, 1, GL_FALSE,
                        (const float *)camera.matrix);
-    glUniformMatrix4fv(model, 1, GL_FALSE, (const float *)pyramid_object.model);
+    glUniformMatrix4fv(model, 1, GL_FALSE, (float[3]){0.0f, 0.0f, 0.0f});
 
     glUniform1i(uniform_tex0_id, 0);
     glUniform4f(light_color_id_pyramid, light_color[0], light_color[1], light_color[2], light_color[3]);
@@ -181,20 +183,22 @@ int main() {
     glUniform3f(camera_position, camera.position[0], camera.position[1], camera.position[2]);
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    object_draw_mesh(&pyramid_object);
+    object_render(&pyramid_object);
 
     shader_use(&light_shader);
     glUniformMatrix4fv(light_camera_matrix, 1, GL_FALSE,
                        (const float *)camera.matrix);
-    glUniformMatrix4fv(light_model, 1, GL_FALSE, (const float *)light_object.model);
+    glUniformMatrix4fv(light_model, 1, GL_FALSE, (const float *)light_model_mat);
     glUniform4f(light_color_id, light_color[0], light_color[1], light_color[2], light_color[3]);
 
-    object_draw_mesh(&light_object);
+    object_render(&light_object);
 
     SDL_GL_SwapWindow(window);
   }
 
-  object_unload_mesh(&pyramid_object);
+  object_delete(&pyramid_object);
+  object_delete(&light_object);
+
   shader_delete(&shader);
 
   SDL_GL_DestroyContext(gl_context);
