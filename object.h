@@ -6,8 +6,8 @@
 #include "models/common.h"
 
 #define VERTEX_ATTRIBUTE_HAS_NORMAL (1 << 0)
-#define VERTEX_ATTRIBUTE_HAS_COLOR (1 << 0)
-#define VERTEX_ATTRIBUTE_HAS_TEXTURE (1 << 0)
+#define VERTEX_ATTRIBUTE_HAS_COLOR (1 << 1)
+#define VERTEX_ATTRIBUTE_HAS_TEXTURE (1 << 2)
 
 struct object {
   GLuint vao;

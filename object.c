@@ -24,21 +24,21 @@ void object_build(struct object *object) {
                         (void *)offsetof(struct vertex_data, position));
   glEnableVertexAttribArray(current_index++);
 
-  if (object->vertex_attributes & VERTEX_ATTRIBUTE_HAS_NORMAL) {
+  if (object->vertices.attributes & VERTEX_ATTRIBUTE_HAS_NORMAL) {
     /* normal */
     glVertexAttribPointer(current_index, 3, GL_FLOAT, GL_FALSE, sizeof(struct vertex_data),
                           (void *)offsetof(struct vertex_data, normal));
     glEnableVertexAttribArray(current_index++);
   }
 
-  if (object->vertex_attributes & VERTEX_ATTRIBUTE_HAS_NORMAL) {
+  if (object->vertices.attributes & VERTEX_ATTRIBUTE_HAS_COLOR) {
     /* color */
     glVertexAttribPointer(current_index, 3, GL_FLOAT, GL_FALSE, sizeof(struct vertex_data),
                           (void *)offsetof(struct vertex_data, color));
     glEnableVertexAttribArray(current_index++);
   }
 
-  if (object->vertex_attributes & VERTEX_ATTRIBUTE_HAS_NORMAL) {
+  if (object->vertices.attributes & VERTEX_ATTRIBUTE_HAS_TEXTURE) {
     /* texture_uv */
     glVertexAttribPointer(current_index, 2, GL_FLOAT, GL_FALSE, sizeof(struct vertex_data),
                           (void *)offsetof(struct vertex_data, texture_uv));
