@@ -68,3 +68,8 @@ void shader_from(struct shader *shader, const char *vert_source,
 void shader_use(struct shader *shader) { glUseProgram(shader->program); }
 
 void shader_delete(struct shader *shader) { glDeleteProgram(shader->program); }
+
+/* TODO: cache uniform ids? */
+GLuint shader_get_uniform(struct shader *shader, const char *name) {
+  return glGetUniformLocation(shader->program, name);
+}
