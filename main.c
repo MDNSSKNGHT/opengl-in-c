@@ -56,9 +56,6 @@ int main() {
 
   glViewport(0, 0, 800, 800);
 
-  struct shader shader;
-  shader_from(&shader, "shaders/default.vert", "shaders/default.frag");
-
   struct object pyramid_object, light_object;
 
   pyramid_object.vertices.data = PYRAMID_MODEL_VERTICES;
@@ -74,6 +71,7 @@ int main() {
   pyramid_object.indices.count =
       sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
 
+  shader_from(&pyramid_object.shader, "shaders/default.vert", "shaders/default.frag");
   texture_load(&pyramid_object.texture, "textures/brick.jpg");
   object_build(&pyramid_object);
 
@@ -89,10 +87,8 @@ int main() {
   light_object.indices.count =
       sizeof(LIGHT_MODEL_INDICES) / sizeof(LIGHT_MODEL_INDICES[0]);
 
+  shader_from(&light_object.shader, "shaders/light.vert", "shaders/light.frag");
   object_build(&light_object);
-
-  struct shader light_shader;
-  shader_from(&light_shader, "shaders/light.vert", "shaders/light.frag");
 
   mat4 light_model_mat = GLM_MAT4_IDENTITY_INIT;
   glm_translate(light_model_mat, (vec3){0.5f, 0.5f, 0.5f});
@@ -137,32 +133,32 @@ int main() {
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader_use(&shader);
+    shader_use(&pyramid_object.shader);
     /* TODO: abstract away shader uniforms */
-    glGetUniformLocation(shader.program, "camera_matrix");
+    glGetUniformLocation(pyramid_object.shader.program, "camera_matrix");
     camera_calculate_matrix(&camera);
-    glUniformMatrix4fv(shader_get_uniform(&shader, "camera_matrix"), 1,
+    glUniformMatrix4fv(shader_get_uniform(&pyramid_object.shader, "camera_matrix"), 1,
                        GL_FALSE, (const float *)camera.matrix);
-    glUniformMatrix4fv(shader_get_uniform(&shader, "model"), 1, GL_FALSE,
+    glUniformMatrix4fv(shader_get_uniform(&pyramid_object.shader, "model"), 1, GL_FALSE,
                        (float[3]){0.0f, 0.0f, 0.0f});
 
-    glUniform1i(shader_get_uniform(&shader, "tex0"), 0);
-    glUniform4f(shader_get_uniform(&shader, "light_color"), light_color[0],
+    glUniform1i(shader_get_uniform(&pyramid_object.shader, "tex0"), 0);
+    glUniform4f(shader_get_uniform(&pyramid_object.shader, "light_color"), light_color[0],
                 light_color[1], light_color[2], light_color[3]);
-    glUniform3f(shader_get_uniform(&shader, "light_position"), 0.5f, 0.5f,
+    glUniform3f(shader_get_uniform(&pyramid_object.shader, "light_position"), 0.5f, 0.5f,
                 0.5f);
-    glUniform3f(shader_get_uniform(&shader, "camera_position"),
+    glUniform3f(shader_get_uniform(&pyramid_object.shader, "camera_position"),
                 camera.position[0], camera.position[1], camera.position[2]);
 
     object_render(&pyramid_object);
 
-    shader_use(&light_shader);
+    shader_use(&light_object.shader);
     /* TODO: abstract away shader uniforms */
-    glUniformMatrix4fv(shader_get_uniform(&light_shader, "camera_matrix"), 1,
+    glUniformMatrix4fv(shader_get_uniform(&light_object.shader, "camera_matrix"), 1,
                        GL_FALSE, (const float *)camera.matrix);
-    glUniformMatrix4fv(shader_get_uniform(&light_shader, "model"), 1, GL_FALSE,
+    glUniformMatrix4fv(shader_get_uniform(&light_object.shader, "model"), 1, GL_FALSE,
                        (const float *)light_model_mat);
-    glUniform4f(shader_get_uniform(&light_shader, "light_color"),
+    glUniform4f(shader_get_uniform(&light_object.shader, "light_color"),
                 light_color[0], light_color[1], light_color[2], light_color[3]);
 
     object_render(&light_object);
@@ -172,8 +168,6 @@ int main() {
 
   object_delete(&pyramid_object);
   object_delete(&light_object);
-
-  shader_delete(&shader);
 
   SDL_GL_DestroyContext(gl_context);
   SDL_DestroyWindow(window);

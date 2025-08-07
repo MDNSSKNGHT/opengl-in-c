@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 
 #include "object.h"
+#include "shader.h"
 #include "texture.h"
 
 void object_build(struct object *object) {
@@ -72,4 +73,5 @@ void object_delete(struct object *object) {
   if (object->vertices.attributes & VERTEX_ATTRIBUTE_HAS_TEXTURE) {
     texture_delete(&object->texture);
   }
+  shader_delete(&object->shader);
 }

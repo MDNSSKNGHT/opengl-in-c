@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 
 #include "models/common.h"
+#include "shader.h"
 #include "texture.h"
 
 #define VERTEX_ATTRIBUTE_HAS_NORMAL (1 << 0)
@@ -29,6 +30,7 @@ struct object {
   } indices;
 
   struct texture texture;
+  struct shader shader;
 };
 
 void object_build(struct object *object);
