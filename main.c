@@ -11,29 +11,7 @@
 
 #include "models/light.h"
 #include "models/pyramid.h"
-
-void load_texture(GLuint ref, const char *filename) {
-  SDL_Surface *surface = IMG_Load(filename);
-
-  SDL_FlipSurface(surface, SDL_FLIP_VERTICAL);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, ref);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, surface->w, surface->h, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, surface->pixels);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  /* unbind texture */
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  SDL_DestroySurface(surface);
-}
+#include "texture.h"
 
 int main() {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -96,6 +74,7 @@ int main() {
   pyramid_object.indices.count =
       sizeof(PYRAMID_MODEL_INDICES) / sizeof(PYRAMID_MODEL_INDICES[0]);
 
+  texture_load(&pyramid_object.texture, "textures/brick.jpg");
   object_build(&pyramid_object);
 
   light_object.vertices.data = LIGHT_MODEL_VERTICES;
@@ -111,10 +90,6 @@ int main() {
       sizeof(LIGHT_MODEL_INDICES) / sizeof(LIGHT_MODEL_INDICES[0]);
 
   object_build(&light_object);
-
-  GLuint texture;
-  glGenTextures(1, &texture);
-  load_texture(texture, "textures/brick.jpg");
 
   struct shader light_shader;
   shader_from(&light_shader, "shaders/light.vert", "shaders/light.frag");
@@ -179,7 +154,6 @@ int main() {
     glUniform3f(shader_get_uniform(&shader, "camera_position"),
                 camera.position[0], camera.position[1], camera.position[2]);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
     object_render(&pyramid_object);
 
     shader_use(&light_shader);

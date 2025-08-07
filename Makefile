@@ -10,9 +10,10 @@ LDFLAGS = $(shell pkg-config --libs glew sdl3 sdl3-image cglm)
 LDFLAGS += -framework OpenGL
 
 OBJ = main.o
-OBJ += shader.o 
-OBJ += camera.o 
-OBJ += object.o 
+OBJ += shader.o
+OBJ += camera.o
+OBJ += object.o
+OBJ += texture.o
 
 # %.o: %.c
 # 	$(CC) -c -o $@ $< $(CFLAGS)
